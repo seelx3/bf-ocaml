@@ -1,22 +1,23 @@
 let rec eval code =
-  let rec eval_bf code pc ptr mem =
+  let mem = Array.make 1000 0 in
+  let rec eval_bf code pc ptr =
     if pc >= String.length code then ()
     else
       match code.[pc] with
-      | '>' -> eval_bf code (pc + 1) (ptr + 1) mem
-      | '<' -> eval_bf code (pc + 1) (ptr - 1) mem
+      | '>' -> eval_bf code (pc + 1) (ptr + 1)
+      | '<' -> eval_bf code (pc + 1) (ptr - 1)
       | '+' ->
+        mem.(ptr) <- mem.(ptr) + 1;
         eval_bf code (pc + 1) ptr
-          (Array.mapi (fun i x -> if i = ptr then x + 1 else x) mem)
       | '-' ->
-        eval_bf code (pc + 1) ptr
-          (Array.mapi (fun i x -> if i = ptr then x - 1 else x) mem)
+        mem.(ptr) <- mem.(ptr) - 1;
+        eval_bf code (pc + 1) ptr;
       | '.' ->
         print_char (Char.chr mem.(ptr));
-        eval_bf code (pc + 1) ptr mem
+        eval_bf code (pc + 1) ptr
       | ',' ->
         mem.(ptr) <- int_of_char (input_char stdin);
-        eval_bf code (pc + 1) ptr mem
+        eval_bf code (pc + 1) ptr 
       | '[' ->
         if mem.(ptr) = 0 then
           let rec skip code pc cnt =
@@ -26,10 +27,11 @@ let rec eval code =
               if cnt = 0 then pc + 1 else skip code (pc + 1) (cnt - 1)
             else skip code (pc + 1) cnt
           in
-          eval_bf code (skip code (pc + 1) 0) ptr mem
-        else eval_bf code (pc + 1) ptr mem
+          eval_bf code (skip code (pc + 1) 0) ptr
+        else eval_bf code (pc + 1) ptr
       | ']' ->
-        if mem.(ptr) = 0 then eval_bf code (pc + 1) ptr mem
+        Printf.printf "pc: %d, ptr: %d, mem: %d\n" pc ptr mem.(ptr);
+        if mem.(ptr) = 0 then eval_bf code (pc + 1) ptr
         else
           let rec back code pc cnt =
             if pc < 0 then failwith "unmatched ']'"
@@ -38,10 +40,10 @@ let rec eval code =
               if cnt = 0 then pc + 1 else back code (pc - 1) (cnt - 1)
             else back code (pc - 1) cnt
           in
-          eval_bf code (back code (pc - 1) 0) ptr mem
-      | _ -> eval_bf code (pc + 1) ptr mem
+          eval_bf code (back code (pc - 1) 0) ptr 
+      | _ -> eval_bf code (pc + 1) ptr 
   in
-  eval_bf code 0 0 (Array.make 1000 0)
+  eval_bf code 0 0
 
 let () =
   let path = ref "" in
