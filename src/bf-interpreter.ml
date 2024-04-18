@@ -1,5 +1,5 @@
 let rec eval code =
-  let mem = Array.make 1000 0 in
+  let mem = Array.make 2000 0 in
   let rec eval_bf code pc ptr =
     if pc >= String.length code then ()
     else
@@ -30,7 +30,6 @@ let rec eval code =
           eval_bf code (skip code (pc + 1) 0) ptr
         else eval_bf code (pc + 1) ptr
       | ']' ->
-        Printf.printf "pc: %d, ptr: %d, mem: %d\n" pc ptr mem.(ptr);
         if mem.(ptr) = 0 then eval_bf code (pc + 1) ptr
         else
           let rec back code pc cnt =
@@ -43,7 +42,7 @@ let rec eval code =
           eval_bf code (back code (pc - 1) 0) ptr 
       | _ -> eval_bf code (pc + 1) ptr 
   in
-  eval_bf code 0 0
+  eval_bf code 0 1000
 
 let () =
   let path = ref "" in
